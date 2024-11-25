@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import io from "socket.io-client";
 import { ThemeProvider } from "@/components/theme-provider";
 
@@ -131,34 +132,39 @@ const App: React.FC = () => {
   return (
     <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Toaster />
-      <div className="flex items-center justify-center min-h-screen bg-background">
-        <div className="container mx-auto p-4 max-w-md border border-border rounded">
-          <h1 className="text-2xl font-bold mb-4 text-foreground text-center">
-            Список задач
-          </h1>
-          <div className="mb-4">
-            <Select defaultValue="all" onValueChange={(value: TaskFilter) => setFilter(value)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Фильтр" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Все</SelectItem>
-                <SelectItem value="completed">Выполненные</SelectItem>
-                <SelectItem value="incomplete">Невыполненные</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <TaskForm onAdd={addTask} />
-          <TaskList
-            tasks={filteredTasks}
-            onDelete={deleteTask}
-            onToggle={toggleTask}
-            onUpdate={updateTask}
-          />
-        </div>
+      <div className="flex items-center justify-center min-h-screen bg-background p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl font-bold text-center">
+              Список задач
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="mb-4">
+              <Select onValueChange={(value: TaskFilter) => setFilter(value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Filter todos" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Все</SelectItem>
+                  <SelectItem value="completed">Выполненные</SelectItem>
+                  <SelectItem value="incomplete">Невыполненные</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <TaskForm onAdd={addTask} />
+            <TaskList
+              tasks={filteredTasks}
+              onDelete={deleteTask}
+              onToggle={toggleTask}
+              onUpdate={updateTask}
+            />
+          </CardContent>
+        </Card>
       </div>
     </ThemeProvider>
   );
 };
 
 export default App;
+
