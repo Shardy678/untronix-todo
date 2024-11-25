@@ -1,10 +1,17 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TaskForm } from "./components/TaskForm";
 import { TaskList } from "./components/TaskList";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/hooks/use-toast";
-
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import io from "socket.io-client";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const socket = io("http://localhost:3000");
 
@@ -14,8 +21,22 @@ export interface Task {
   completed: boolean;
 }
 
+export type TaskFilter = "all" | "completed" | "incomplete";
+
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [filter, setFilter] = useState<TaskFilter>("all");
+
+  const filteredTasks = useMemo(() => {
+    switch (filter) {
+      case "completed":
+        return tasks.filter((task) => task.completed);
+      case "incomplete":
+        return tasks.filter((task) => !task.completed);
+      default:
+        return tasks;
+    }
+  }, [tasks, filter]);
 
   const { toast } = useToast();
 
@@ -34,10 +55,11 @@ const App: React.FC = () => {
     });
 
     socket.on("taskDeleted", (deletedTask: { id: number; title: string }) => {
-      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== deletedTask.id));
+      setTasks((prevTasks) =>
+        prevTasks.filter((task) => task.id !== deletedTask.id)
+      );
       toast({ title: `Задача «${deletedTask.title}» удалена` });
     });
-    
 
     socket.on("taskToggled", (updatedTask: Task) => {
       setTasks((prevTasks) =>
@@ -107,23 +129,35 @@ const App: React.FC = () => {
   };
 
   return (
-    <>
+    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
       <Toaster />
-      <div className="flex items-center justify-center min-h-screen bg-black">
-        <div className="container mx-auto p-4 max-w-md dark border border-neutral-800 rounded antialiased">
-          <h1 className="text-2xl font-bold mb-4 text-white text-center">
+      <div className="flex items-center justify-center min-h-screen bg-background">
+        <div className="container mx-auto p-4 max-w-md border border-border rounded">
+          <h1 className="text-2xl font-bold mb-4 text-foreground text-center">
             Список задач
           </h1>
+          <div className="mb-4">
+            <Select defaultValue="all" onValueChange={(value: TaskFilter) => setFilter(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Фильтр" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Все</SelectItem>
+                <SelectItem value="completed">Выполненные</SelectItem>
+                <SelectItem value="incomplete">Невыполненные</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <TaskForm onAdd={addTask} />
           <TaskList
-            tasks={tasks}
+            tasks={filteredTasks}
             onDelete={deleteTask}
             onToggle={toggleTask}
             onUpdate={updateTask}
           />
         </div>
       </div>
-    </>
+    </ThemeProvider>
   );
 };
 

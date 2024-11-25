@@ -28,7 +28,7 @@ export function TaskForm({ onAdd }: TaskFormProps) {
         value={newTask.title}
         onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
         placeholder="Введите новую задачу"
-        className="flex-grow border border-white text-white"
+        className="flex-grow"
       />
       <Button type="submit">Добавить</Button>
     </form>

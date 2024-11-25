@@ -41,7 +41,7 @@ export function TaskList({
       {tasks.map((task) => (
         <li
           key={task.id}
-          className="flex items-center gap-2 p-2 border border-neutral-800 rounded"
+          className="flex items-center gap-2 p-2 border border-border rounded"
         >
           <Checkbox
             checked={task.completed}
@@ -56,7 +56,7 @@ export function TaskList({
                 onChange={(e) =>
                   setEditedTask({ ...editedTask, title: e.target.value })
                 }
-                className="flex-grow border border-white text-white"
+                className="flex-grow"
               />
               <Button type="submit">Сохранить</Button>
             </form>
@@ -64,8 +64,8 @@ export function TaskList({
             <>
               <label
                 htmlFor={`task-${task.id}`}
-                className={`flex-grow text-white ${
-                  task.completed ? "line-through text-gray-400" : ""
+                className={`flex-grow ${
+                  task.completed ? "line-through text-muted-foreground" : ""
                 }`}
               >
                 {task.title}
@@ -79,3 +79,4 @@ export function TaskList({
     </ul>
   );
 }
+
