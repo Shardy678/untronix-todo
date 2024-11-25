@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
 import { TaskForm } from "./components/TaskForm";
 import { TaskList } from "./components/TaskList";
+import { Toaster } from "@/components/ui/toaster";
+import { useToast } from "@/components/hooks/use-toast";
+
 import io from "socket.io-client";
 
 const socket = io("http://localhost:3000");
@@ -14,6 +17,8 @@ export interface Task {
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
 
+  const { toast } = useToast();
+
   useEffect(() => {
     const fetchTasks = async () => {
       const response = await fetch("http://localhost:3000/tasks");
@@ -25,11 +30,14 @@ const App: React.FC = () => {
 
     socket.on("taskAdded", (newTask: Task) => {
       setTasks((prevTasks) => [...prevTasks, newTask]);
+      toast({ title: `Задача «${newTask.title}» добавлена` });
     });
 
-    socket.on("taskDeleted", (taskId: number) => {
-      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+    socket.on("taskDeleted", (deletedTask: { id: number; title: string }) => {
+      setTasks((prevTasks) => prevTasks.filter((task) => task.id !== deletedTask.id));
+      toast({ title: `Задача «${deletedTask.title}» удалена` });
     });
+    
 
     socket.on("taskToggled", (updatedTask: Task) => {
       setTasks((prevTasks) =>
@@ -37,6 +45,11 @@ const App: React.FC = () => {
           task.id === updatedTask.id ? updatedTask : task
         )
       );
+      toast({
+        title: `Задача «${updatedTask.title}» ${
+          updatedTask.completed ? "выполнена" : "не выполнена"
+        }`,
+      });
     });
 
     return () => {
@@ -81,16 +94,36 @@ const App: React.FC = () => {
     socket.emit("taskToggled", updatedTask);
   };
 
+  const updateTask = async (taskId: number, updatedTask: Omit<Task, "id">) => {
+    const response = await fetch(`http://localhost:3000/tasks/${taskId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(updatedTask),
+    });
+    const updatedTaskResponse: Task = await response.json();
+    socket.emit("taskUpdated", updatedTaskResponse);
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-black">
-      <div className="container mx-auto p-4 max-w-md dark border border-neutral-800 rounded antialiased">
-        <h1 className="text-2xl font-bold mb-4 text-white text-center">
-          Список задач
-        </h1>
-        <TaskForm onAdd={addTask} />
-        <TaskList tasks={tasks} onDelete={deleteTask} onToggle={toggleTask} />
+    <>
+      <Toaster />
+      <div className="flex items-center justify-center min-h-screen bg-black">
+        <div className="container mx-auto p-4 max-w-md dark border border-neutral-800 rounded antialiased">
+          <h1 className="text-2xl font-bold mb-4 text-white text-center">
+            Список задач
+          </h1>
+          <TaskForm onAdd={addTask} />
+          <TaskList
+            tasks={tasks}
+            onDelete={deleteTask}
+            onToggle={toggleTask}
+            onUpdate={updateTask}
+          />
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 

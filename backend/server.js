@@ -31,10 +31,16 @@ app.post("/tasks", (req, res) => {
 
 app.delete("/tasks/:id", (req, res) => {
   const taskId = parseInt(req.params.id);
-  tasks = tasks.filter((task) => task.id !== taskId);
-  io.emit("taskDeleted", taskId);
-  res.status(204).send();
+  const taskToDelete = tasks.find((task) => task.id === taskId);
+  if (taskToDelete) {
+    tasks = tasks.filter((task) => task.id !== taskId);
+    io.emit("taskDeleted", { id: taskId, title: taskToDelete.title });
+    res.status(204).send();
+  } else {
+    res.status(404).send("Задача не найдена");
+  }
 });
+
 
 app.put("/tasks/:id", (req, res) => {
   const taskId = parseInt(req.params.id);

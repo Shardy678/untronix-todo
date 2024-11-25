@@ -1,14 +1,41 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Task } from "@/App";
+import { useState } from "react";
 
 interface TaskListProps {
   tasks: Task[];
   onDelete: (id: number) => void;
   onToggle: (id: number) => void;
+  onUpdate: (id: number, updatedTask: Omit<Task, "id">) => void;
 }
 
-export function TaskList({ tasks, onDelete, onToggle }: TaskListProps) {
+export function TaskList({
+  tasks,
+  onDelete,
+  onToggle,
+  onUpdate,
+}: TaskListProps) {
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [editedTask, setEditedTask] = useState<Omit<Task, "id">>({
+    title: "",
+    completed: false,
+  });
+
+  const handleEdit = (task: Task) => {
+    setEditingTaskId(task.id);
+    setEditedTask({ title: task.title, completed: task.completed });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (editedTask.title.trim() && editingTaskId !== null) {
+      onUpdate(editingTaskId, { ...editedTask });
+      setEditingTaskId(null);
+    }
+  };
+
   return (
     <ul className="space-y-2">
       {tasks.map((task) => (
@@ -21,14 +48,31 @@ export function TaskList({ tasks, onDelete, onToggle }: TaskListProps) {
             onCheckedChange={() => onToggle(task.id)}
             id={`task-${task.id}`}
           />
-          <label
-            htmlFor={`task-${task.id}`}
-            className={`flex-grow text-white ${
-              task.completed ? "line-through text-gray-400" : ""
-            }`}
-          >
-            {task.title}
-          </label>
+          {editingTaskId === task.id ? (
+            <form onSubmit={handleSubmit} className="flex gap-2">
+              <Input
+                type="text"
+                value={editedTask.title}
+                onChange={(e) =>
+                  setEditedTask({ ...editedTask, title: e.target.value })
+                }
+                className="flex-grow border border-white text-white"
+              />
+              <Button type="submit">Сохранить</Button>
+            </form>
+          ) : (
+            <>
+              <label
+                htmlFor={`task-${task.id}`}
+                className={`flex-grow text-white ${
+                  task.completed ? "line-through text-gray-400" : ""
+                }`}
+              >
+                {task.title}
+              </label>
+              <Button onClick={() => handleEdit(task)}>Редактировать</Button>
+            </>
+          )}
           <Button onClick={() => onDelete(task.id)}>Удалить</Button>
         </li>
       ))}
