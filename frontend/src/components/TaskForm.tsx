@@ -11,6 +11,7 @@ import {
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { ru } from "date-fns/locale";
 
 interface TaskFormProps {
   onAdd: (task: Omit<Task, "id">) => void;
@@ -55,7 +56,7 @@ export function TaskForm({ onAdd }: TaskFormProps) {
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
             {newTask.date ? (
-              format(new Date(newTask.date), "PPP")
+              format(new Date(newTask.date), "dd MMMM", { locale: ru }) 
             ) : (
               <span>Выберите дату</span>
             )}
