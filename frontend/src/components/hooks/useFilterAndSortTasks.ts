@@ -9,7 +9,6 @@ const useFilterAndSortTasks = (
   const filteredAndSortedTasks = useMemo(() => {
     let result = tasks;
 
-    // Filter tasks
     switch (filter) {
       case "completed":
         result = result.filter((task) => task.completed);
@@ -19,7 +18,6 @@ const useFilterAndSortTasks = (
         break;
     }
 
-    // Sort tasks
     result.sort((a, b) => {
       const dateA = new Date(a.date).getTime();
       const dateB = new Date(b.date).getTime();
