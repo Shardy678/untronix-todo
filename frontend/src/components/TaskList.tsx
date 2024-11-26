@@ -3,6 +3,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Task } from "@/App";
 import { useState } from "react";
+import { format } from "date-fns";
+import { ru } from "date-fns/locale";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon, Check, Pencil, Trash2 } from "lucide-react";
 
 interface TaskListProps {
   tasks: Task[];
@@ -21,11 +30,16 @@ export function TaskList({
   const [editedTask, setEditedTask] = useState<Omit<Task, "id">>({
     title: "",
     completed: false,
+    date: "",
   });
 
   const handleEdit = (task: Task) => {
     setEditingTaskId(task.id);
-    setEditedTask({ title: task.title, completed: task.completed });
+    setEditedTask({
+      title: task.title,
+      completed: task.completed,
+      date: task.date,
+    });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -49,7 +63,10 @@ export function TaskList({
             id={`task-${task.id}`}
           />
           {editingTaskId === task.id ? (
-            <form onSubmit={handleSubmit} className="flex gap-2">
+            <form
+              onSubmit={handleSubmit}
+              className="flex-grow flex items-center gap-2"
+            >
               <Input
                 type="text"
                 value={editedTask.title}
@@ -58,25 +75,61 @@ export function TaskList({
                 }
                 className="flex-grow"
               />
-              <Button type="submit">Сохранить</Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="icon" className="px-3">
+                    <CalendarIcon />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={
+                      editedTask.date ? new Date(editedTask.date) : undefined
+                    }
+                    onSelect={(date) =>
+                      setEditedTask({
+                        ...editedTask,
+                        date: date ? date.toISOString().split("T")[0] : "",
+                      })
+                    }
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+              <Button type="submit" size="icon" className="p-3">
+                <Check />
+              </Button>
             </form>
           ) : (
             <>
-              <label
-                htmlFor={`task-${task.id}`}
-                className={`flex-grow ${
-                  task.completed ? "line-through text-muted-foreground" : ""
-                }`}
+              <div className="flex-grow">
+                <label
+                  htmlFor={`task-${task.id}`}
+                  className={`block ${
+                    task.completed ? "line-through text-muted-foreground" : ""
+                  }`}
+                >
+                  {task.title}
+                </label>
+                <span className="text-sm text-muted-foreground">
+                  {task.date &&
+                    format(new Date(task.date), "dd MMMM", { locale: ru })}
+                </span>
+              </div>
+              <Button
+                variant="outline"
+                size="icon"
+                className="px-3"
+                onClick={() => handleEdit(task)}
               >
-                {task.title}
-              </label>
-              <Button onClick={() => handleEdit(task)}>Редактировать</Button>
+                <Pencil />
+              </Button>
+              <Button variant='outline' size='icon' className="px-3" onClick={() => onDelete(task.id)}><Trash2/></Button>
             </>
           )}
-          <Button onClick={() => onDelete(task.id)}>Удалить</Button>
         </li>
       ))}
     </ul>
   );
 }
-

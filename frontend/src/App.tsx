@@ -20,24 +20,39 @@ export interface Task {
   id: number;
   title: string;
   completed: boolean;
+  date: string; // New date field
 }
 
 export type TaskFilter = "all" | "completed" | "incomplete";
+export type TaskSort = "date-asc" | "date-desc";
 
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filter, setFilter] = useState<TaskFilter>("all");
+  const [sort, setSort] = useState<TaskSort>("date-desc");
 
-  const filteredTasks = useMemo(() => {
+  const filteredAndSortedTasks = useMemo(() => {
+    let result = tasks;
+
+    // Filter tasks
     switch (filter) {
       case "completed":
-        return tasks.filter((task) => task.completed);
+        result = result.filter((task) => task.completed);
+        break;
       case "incomplete":
-        return tasks.filter((task) => !task.completed);
-      default:
-        return tasks;
+        result = result.filter((task) => !task.completed);
+        break;
     }
-  }, [tasks, filter]);
+
+    // Sort tasks
+    result.sort((a, b) => {
+      const dateA = new Date(a.date).getTime();
+      const dateB = new Date(b.date).getTime();
+      return sort === "date-asc" ? dateA - dateB : dateB - dateA;
+    });
+
+    return result;
+  }, [tasks, filter, sort]);
 
   const { toast } = useToast();
 
@@ -140,10 +155,10 @@ const App: React.FC = () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="mb-4">
+            <div className="mb-4 space-y-2">
               <Select onValueChange={(value: TaskFilter) => setFilter(value)}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Filter todos" />
+                  <SelectValue placeholder="Фильтр задач" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Все</SelectItem>
@@ -151,10 +166,19 @@ const App: React.FC = () => {
                   <SelectItem value="incomplete">Невыполненные</SelectItem>
                 </SelectContent>
               </Select>
+              <Select onValueChange={(value: TaskSort) => setSort(value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Сортировка по дате" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="date-asc">Сначала старые</SelectItem>
+                  <SelectItem value="date-desc">Сначала новые</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <TaskForm onAdd={addTask} />
             <TaskList
-              tasks={filteredTasks}
+              tasks={filteredAndSortedTasks}
               onDelete={deleteTask}
               onToggle={toggleTask}
               onUpdate={updateTask}
