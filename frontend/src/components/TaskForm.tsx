@@ -3,8 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Task } from "@/App";
 import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from 'lucide-react';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 
@@ -16,14 +20,18 @@ export function TaskForm({ onAdd }: TaskFormProps) {
   const [newTask, setNewTask] = useState<Omit<Task, "id">>({
     title: "",
     completed: false,
-    date: new Date().toISOString().split('T')[0],
+    date: new Date().toISOString().split("T")[0],
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (newTask.title.trim()) {
       onAdd(newTask);
-      setNewTask({ title: "", completed: false, date: new Date().toISOString().split('T')[0] });
+      setNewTask({
+        title: "",
+        completed: false,
+        date: new Date().toISOString().split("T")[0],
+      });
     }
   };
 
@@ -46,20 +54,30 @@ export function TaskForm({ onAdd }: TaskFormProps) {
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {newTask.date ? format(new Date(newTask.date), "PPP") : <span>Выберите дату</span>}
+            {newTask.date ? (
+              format(new Date(newTask.date), "PPP")
+            ) : (
+              <span>Выберите дату</span>
+            )}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
           <Calendar
             mode="single"
             selected={new Date(newTask.date)}
-            onSelect={(date) => setNewTask({ ...newTask, date: date ? date.toISOString().split('T')[0] : '' })}
+            onSelect={(date) =>
+              setNewTask({
+                ...newTask,
+                date: date ? format(date, "yyyy-MM-dd") : "",
+              })
+            }
             initialFocus
           />
         </PopoverContent>
       </Popover>
-      <Button type="submit" className="w-full">Добавить</Button>
+      <Button type="submit" className="w-full">
+        Добавить
+      </Button>
     </form>
   );
 }
-

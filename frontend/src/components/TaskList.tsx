@@ -83,17 +83,15 @@ export function TaskList({
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0">
                   <Calendar
-                    mode="single"
-                    selected={
-                      editedTask.date ? new Date(editedTask.date) : undefined
-                    }
-                    onSelect={(date) =>
-                      setEditedTask({
-                        ...editedTask,
-                        date: date ? date.toISOString().split("T")[0] : "",
-                      })
-                    }
-                    initialFocus
+                   mode="single"
+                   selected={new Date(editedTask.date)}
+                   onSelect={(date) =>
+                     setEditedTask({
+                       ...editedTask,
+                       date: date ? format(date, "yyyy-MM-dd") : "",
+                     })
+                   }
+                   initialFocus
                   />
                 </PopoverContent>
               </Popover>
