@@ -13,46 +13,17 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import io from "socket.io-client";
 import { ThemeProvider } from "@/components/theme-provider";
+import { Task, TaskFilter, TaskSort } from "./lib/types";
+import useFilterAndSortTasks from "./components/hooks/useFilterAndSortTasks";
 
 const socket = io("http://localhost:3000");
-
-export interface Task {
-  id: number;
-  title: string;
-  completed: boolean;
-  date: string; 
-}
-
-export type TaskFilter = "all" | "completed" | "incomplete";
-export type TaskSort = "date-asc" | "date-desc";
 
 const App: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filter, setFilter] = useState<TaskFilter>("all");
   const [sort, setSort] = useState<TaskSort>("date-desc");
 
-  const filteredAndSortedTasks = useMemo(() => {
-    let result = tasks;
-
-    // Filter tasks
-    switch (filter) {
-      case "completed":
-        result = result.filter((task) => task.completed);
-        break;
-      case "incomplete":
-        result = result.filter((task) => !task.completed);
-        break;
-    }
-
-    // Sort tasks
-    result.sort((a, b) => {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      return sort === "date-asc" ? dateA - dateB : dateB - dateA;
-    });
-
-    return result;
-  }, [tasks, filter, sort]);
+  const filteredAndSortedTasks = useFilterAndSortTasks(tasks, filter, sort);
 
   const { toast } = useToast();
 
@@ -191,4 +162,3 @@ const App: React.FC = () => {
 };
 
 export default App;
-
