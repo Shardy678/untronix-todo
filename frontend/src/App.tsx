@@ -20,7 +20,7 @@ export interface Task {
   id: number;
   title: string;
   completed: boolean;
-  date: string; // New date field
+  date: string; 
 }
 
 export type TaskFilter = "all" | "completed" | "incomplete";

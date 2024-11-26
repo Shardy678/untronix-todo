@@ -55,7 +55,7 @@ export function TaskList({
       {tasks.map((task) => (
         <li
           key={task.id}
-          className="flex items-center gap-2 p-2 border border-border rounded"
+          className="flex items-center gap-2 p-2 px-4 border border-border rounded"
         >
           <Checkbox
             checked={task.completed}
